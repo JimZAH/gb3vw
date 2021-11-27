@@ -164,7 +164,7 @@ void loop() {
     TCCR2A = _BV(COM2A1) | _BV(COM2B1) | _BV(WGM20) | _BV(WGM20);
     _delay_ms(2000);
     TCCR2A = 0;
-    while (PIND == 0xEF){
+    while ((PIND & rx_mask) == ctcss){
       PORTB = PORTB | (1 << 0);
     }
     _delay_ms(10);
