@@ -16,18 +16,16 @@
 // END
 
 // Hard coded
+#define ctcss 0x0
 #define dtmf_mask 0x0F
 #define dtmf_detect_mask 0x10
+#define H _BV(WGM21) // High Tone
+#define L _BV(WGM20) // Low Tone
 #define rx_mask 0x80
-#define idle 60 // cold time
 #define MAX_VALUE 0xFF
 #define dit 70
 #define dah dit*3
 #define space dah
-// END
-
-// PIN def
-#define ctcss 0x0
 // END
 
 bool rx = false;
@@ -71,14 +69,14 @@ void id(){
 void ids(char* s){
   int j = 0;
   while (s[j] != NULL){
-    idm(s[j]);
+    idm(s[j],H);
     j++;
   }
   _delay_ms(space);
 }
 
-void idm(char c){
-  TCCR2A = _BV(COM2A1) | _BV(COM2B1) | _BV(WGM21) | _BV(WGM20);
+void idm(char c, int HL){
+  TCCR2A = _BV(COM2A1) | _BV(COM2B1) | HL | _BV(WGM20);
   if (c == '.'){
     _delay_ms(dit);
   } else {
@@ -112,7 +110,7 @@ void loop() {
     for (int i = 0; i < 200; i++){
     _delay_ms(25);
     if ((PIND & dtmf_detect_mask) == dtmf_detect_mask){
-      idm("-");
+      idm("-", H);
       CODE = (PIND & dtmf_mask);
       i = 0;
     }
@@ -158,7 +156,7 @@ void loop() {
     rx = false;
     if ( myrpt.pip && millis() - st >= 2000 ){
       _delay_ms(250);
-       idm('.');  
+       idm('.', L);  
     }
     st = millis();
   }
@@ -183,5 +181,4 @@ void loop() {
     _delay_ms(500);
     id();
   }
-
 }
