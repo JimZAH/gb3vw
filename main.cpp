@@ -69,7 +69,7 @@ void id(){
 void ids(char* s){
   int j = 0;
   while (s[j] != NULL){
-    idm(s[j],H);
+    idm(s[j], H);
     j++;
   }
   _delay_ms(space);
@@ -163,9 +163,7 @@ void loop() {
   
   if (myrpt.timeo > 10 && rx && millis() - st == myrpt.timeo*1000){
     PORTB = (1 << 5);
-    TCCR2A = _BV(COM2A1) | _BV(COM2B1) | _BV(WGM20) | _BV(WGM20);
-    _delay_ms(2000);
-    TCCR2A = 0;
+    idm('-', L);
     while ((PIND & rx_mask) == ctcss){
       PORTB = PORTB | (1 << 0);
     }
