@@ -128,7 +128,7 @@ void loop() {
       EEPROM.update(hangtime, MAX_VALUE);
       break;
       case 0x05:
-      EEPROM.update(hangtime, 100);
+      EEPROM.update(hangtime, 150);
       break;
       case 0x06:
       EEPROM.update(pip_enable, 1);
