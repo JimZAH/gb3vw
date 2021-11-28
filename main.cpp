@@ -21,7 +21,7 @@
 #define rx_mask 0x80
 #define idle 60 // cold time
 #define MAX_VALUE 0xFF
-#define dit 75
+#define dit 70
 #define dah dit*3
 #define space dah
 // END
@@ -61,7 +61,7 @@ void id(){
   char* idc[6] = {"--.","-...","...--","...-",".--","-.."};
   for (int i=0; i < sizeof(idc) / sizeof(idc[0]); i++){
     if (i > 4){
-      _delay_ms(space*4);
+      _delay_ms(space*2);
     }
     ids(idc[i]);
   }
@@ -92,7 +92,7 @@ void setup() {
   DDRB = DDRB | 0x3c; DDRD = 0x0;
   PORTB = 0x0; PORTD = 0x80; 
   checks();
-  OCR2A = 128;
+  OCR2A = 32;
   PORTB = 0x02;
   if (myrpt.id){
     _delay_ms(1000);
@@ -124,13 +124,13 @@ void loop() {
       EEPROM.update(id_enable, 1);
       break;
       case 0x03:
-      EEPROM.update(hangtime, 100);
+      EEPROM.update(hangtime, 25);
       break;
       case 0x04:
       EEPROM.update(hangtime, MAX_VALUE);
       break;
       case 0x05:
-      EEPROM.update(hangtime, 50);
+      EEPROM.update(hangtime, 100);
       break;
       case 0x06:
       EEPROM.update(pip_enable, 1);
@@ -138,7 +138,11 @@ void loop() {
       case 0x07:
       EEPROM.update(pip_enable, 0);
       break;
+      case 0x08:
+      id();
+      break;
     }
+    CODE = 0x0;
     }
     checks();
     PORTB = PORTB & (0 << 5);
@@ -170,13 +174,13 @@ void loop() {
     _delay_ms(10);
   }
 
-  if (tx && !rx && millis() - st >= myrpt.hang*10){ 
+  if (tx && !rx && millis() - st >= myrpt.hang*20){ 
     PORTB = PORTB & 0x00;
     tx=false;
   }
 
   if(myrpt.id && tx && !rx && millis() - li >= 600000){
-    _delay_ms(250);
+    _delay_ms(500);
     id();
   }
 
