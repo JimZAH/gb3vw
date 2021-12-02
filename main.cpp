@@ -171,7 +171,7 @@ void loop() {
   }
 
   if (tx && !rx && millis() - st >= myrpt.hang*20){ 
-    PORTB = PORTB & 0x00;
+    PORTB = PORTB & 0x0;
     tx=false;
   }
 
