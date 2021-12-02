@@ -88,7 +88,7 @@ void idm(char c, int HL){
 
 void setup() {
   DDRB = DDRB | 0x3c; DDRD = 0x0;
-  PORTB = 0x0; PORTD = 0x80; 
+  PORTB = 0x0; PORTD = rx_mask; 
   checks();
   OCR2A = 32;
   PORTB = 0x02;
@@ -151,7 +151,7 @@ void loop() {
     rx = true;
     tx = true;
     st = millis();
-  } else if (rx && (PIND & rx_mask) == 0x80){
+  } else if (rx && (PIND & rx_mask) == rx_mask){
     PORTB = PORTB & 0x02;
     rx = false;
     if ( myrpt.pip && millis() - st >= 2000 ){
