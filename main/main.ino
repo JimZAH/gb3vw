@@ -23,6 +23,7 @@
 #define L _BV(WGM20) // Low Tone
 #define rx_mask 0x80
 #define MAX_VALUE 0xFF
+#define PASSCODE 1234 // Hard coded for testing
 #define dit 70
 #define dah dit*3
 #define space dah
@@ -32,6 +33,8 @@ bool rx = false;
 bool tx = true;
 long st = 0;
 long li = 0;
+int ic = 0;
+int input[5] = {0};
 
 struct rpt{
   bool repeat_enable;
@@ -88,7 +91,7 @@ void idm(char c, int HL){
 
 void setup() {
   DDRB = DDRB | 0x3c; DDRD = 0x0;
-  PORTB = 0x0; PORTD = 0x80; 
+  PORTB = 0x0; PORTD = rx_mask; 
   checks();
   OCR2A = 32;
   PORTB = 0x02;
@@ -104,46 +107,52 @@ void loop() {
     PORTB = (1 << 5);
   }
 
-  while ((PIND & dtmf_detect_mask) == dtmf_detect_mask){ // DTMF DECODE
-    int CODE;
+  if ((PIND & dtmf_detect_mask) == dtmf_detect_mask){ // DTMF DECODE
     PORTB = PORTB | (1 << 5);
-    for (int i = 0; i < 200; i++){
-    _delay_ms(25);
-    if ((PIND & dtmf_detect_mask) == dtmf_detect_mask){
-      idm("-", H);
-      CODE = (PIND & dtmf_mask);
-      i = 0;
-    }
-    switch (CODE){
-      case 0x01:
-      EEPROM.update(id_enable, 0);
-      break;
-      case 0x02:
-      EEPROM.update(id_enable, 1);
-      break;
-      case 0x03:
-      EEPROM.update(hangtime, 25);
-      break;
-      case 0x04:
-      EEPROM.update(hangtime, MAX_VALUE);
-      break;
-      case 0x05:
-      EEPROM.update(hangtime, 150);
-      break;
-      case 0x06:
-      EEPROM.update(pip_enable, 1);
-      break;
-      case 0x07:
-      EEPROM.update(pip_enable, 0);
-      break;
-      case 0x08:
-      id();
-      break;
-    }
-    CODE = 0x0;
+    int CODE;
+    CODE = (PIND & dtmf_mask);
+    input[ic] = CODE;
+    ic++;
+    idm('-', H);
+    if (ic >= 5){
+      int pass = 0;
+      for (int i=0; i < 4; i++){
+        pass = pass*10;
+        pass = pass + input[i];
+      }
+      if (pass = PASSCODE){
+        switch (input[5]){
+          case 0x01:
+          EEPROM.update(id_enable, 0);
+          break;
+          case 0x02:
+          EEPROM.update(id_enable, 1);
+          break;
+          case 0x03:
+          EEPROM.update(hangtime, 25);
+          break;
+          case 0x04:
+          EEPROM.update(hangtime, MAX_VALUE);
+          break;
+          case 0x05:
+          EEPROM.update(hangtime, 150);
+          break;
+          case 0x06:
+          EEPROM.update(pip_enable, 1);
+          break;
+          case 0x07:
+          EEPROM.update(pip_enable, 0);
+          break;
+          case 0x08:
+          id();
+          break;
+          }
+        idm('-', L);
+       }
     }
     checks();
     PORTB = PORTB & (0 << 5);
+    _delay_ms(25);
   }
 
   if (!rx && (PIND & rx_mask) == ctcss){
@@ -151,9 +160,12 @@ void loop() {
     rx = true;
     tx = true;
     st = millis();
-  } else if (rx && (PIND & rx_mask) == 0x80){
+  } else if (rx && (PIND & rx_mask) == rx_mask){
     PORTB = PORTB & 0x02;
     rx = false;
+    if (ic) // Clear the input counter
+      ic = 0;
+    
     if ( myrpt.pip && millis() - st >= 2000 ){
       _delay_ms(250);
        idm('.', L);  
@@ -171,7 +183,7 @@ void loop() {
   }
 
   if (tx && !rx && millis() - st >= myrpt.hang*20){ 
-    PORTB = PORTB & 0x00;
+    PORTB = PORTB & 0x0;
     tx=false;
   }
 
