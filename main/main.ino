@@ -34,7 +34,7 @@ bool tx = true;
 long st = 0;
 long li = 0;
 int ic = 0;
-int input[8] = {0};
+int input[5] = {0};
 
 struct rpt{
   bool repeat_enable;
@@ -113,12 +113,42 @@ void loop() {
     CODE = (PIND & dtmf_mask);
     input[ic] = CODE;
     ic++;
-    if (ic >= 8){
+    idm('-', H);
+    if (ic >= 5){
       int pass = 0;
-      //TODO: grab first 4 array ints and convert into single int.
-      if (pass = PASSCODE){
-        // SUCCESS
+      for (int i=0; i < 4; i++){
+        pass = pass*10;
+        pass = pass + input[i];
       }
+      if (pass = PASSCODE){
+        switch (input[5]){
+          case 0x01:
+          EEPROM.update(id_enable, 0);
+          break;
+          case 0x02:
+          EEPROM.update(id_enable, 1);
+          break;
+          case 0x03:
+          EEPROM.update(hangtime, 25);
+          break;
+          case 0x04:
+          EEPROM.update(hangtime, MAX_VALUE);
+          break;
+          case 0x05:
+          EEPROM.update(hangtime, 150);
+          break;
+          case 0x06:
+          EEPROM.update(pip_enable, 1);
+          break;
+          case 0x07:
+          EEPROM.update(pip_enable, 0);
+          break;
+          case 0x08:
+          id();
+          break;
+          }
+        idm('-', L);
+       }
     }
     checks();
     PORTB = PORTB & (0 << 5);
