@@ -152,11 +152,11 @@ void loop() {
           id();
           break;
           }
+        checks();
         idm('-', L);
         ic = 0;
        }
     }
-    checks();
     PORTB = PORTB & (0 << 5);
     _delay_ms(25);
   }
