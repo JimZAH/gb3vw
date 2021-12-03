@@ -75,11 +75,7 @@ void ids(char* s){
     idm(s[j], H);
     j++;
   }
-  if ((PIND & rx_mask) == ctcss){
-    PORTB = PORTB | 0x07;
-  } else {
-    PORTB = PORTB & 0x02;
-  }
+  ((PIND & rx_mask) == ctcss) ? PORTB = PORTB & 0x02 : PORTB = PORTB | 0x07;
   _delay_ms(space);
 }
 
