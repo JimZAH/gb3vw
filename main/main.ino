@@ -24,7 +24,7 @@
 #define rx_mask 0x80
 #define MAX_VALUE 0xFF
 #define PASSCODE 1234 // Hard coded for testing
-#define dit 70
+#define dit 68
 #define dah dit*3
 #define space dah
 // END
@@ -75,6 +75,11 @@ void ids(char* s){
     idm(s[j], H);
     j++;
   }
+  if ((PIND & rx_mask) == ctcss){
+    PORTB = PORTB | 0x07;
+  } else {
+    PORTB = PORTB & 0x02;
+  }
   _delay_ms(space);
 }
 
@@ -114,14 +119,14 @@ void loop() {
     input[ic] = CODE;
     ic++;
     idm('-', H);
-    if (ic >= 5){
+    if (ic >= 5){ //TODO: Stop transmitter dropping when digits entered.
       int pass = 0;
       for (int i=0; i < 4; i++){
         pass = pass*10;
         pass = pass + input[i];
       }
-      if (pass = PASSCODE){
-        switch (input[5]){
+      if (pass == PASSCODE){
+        switch (CODE){
           case 0x01:
           EEPROM.update(id_enable, 0);
           break;
@@ -148,6 +153,7 @@ void loop() {
           break;
           }
         idm('-', L);
+        ic = 0;
        }
     }
     checks();
@@ -160,11 +166,11 @@ void loop() {
     rx = true;
     tx = true;
     st = millis();
+    if (ic) // Clear the input counter
+      ic = 0;
   } else if (rx && (PIND & rx_mask) == rx_mask){
     PORTB = PORTB & 0x02;
     rx = false;
-    if (ic) // Clear the input counter
-      ic = 0;
     
     if ( myrpt.pip && millis() - st >= 2000 ){
       _delay_ms(250);
