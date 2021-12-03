@@ -24,7 +24,7 @@
 #define rx_mask 0x80
 #define MAX_VALUE 0xFF
 #define PASSCODE 1234 // Hard coded for testing
-#define dit 68
+#define dit 66
 #define dah dit*3
 #define space dah
 // END
@@ -75,7 +75,7 @@ void ids(char* s){
     idm(s[j], H);
     j++;
   }
-  ((PIND & rx_mask) == ctcss) ? PORTB = PORTB & 0x02 : PORTB = PORTB | 0x07;
+  ((PIND & rx_mask) == ctcss) ? PORTB = PORTB | 0x07 : PORTB = PORTB & 0x02;
   _delay_ms(space);
 }
 
@@ -115,7 +115,7 @@ void loop() {
     input[ic] = CODE;
     ic++;
     idm('-', H);
-    if (ic >= 5){ //TODO: Stop transmitter dropping when digits entered.
+    if (ic >= 5){
       int pass = 0;
       for (int i=0; i < 4; i++){
         pass = pass*10;
@@ -153,7 +153,6 @@ void loop() {
         ic = 0;
        }
     }
-    PORTB = PORTB & (0 << 5);
     _delay_ms(25);
   }
 
@@ -162,12 +161,12 @@ void loop() {
     rx = true;
     tx = true;
     st = millis();
-    if (ic) // Clear the input counter
-      ic = 0;
   } else if (rx && (PIND & rx_mask) == rx_mask){
     PORTB = PORTB & 0x02;
     rx = false;
-    
+    if (ic) // Clear the input counter
+      ic = 0;
+      
     if ( myrpt.pip && millis() - st >= 2000 ){
       _delay_ms(250);
        idm('.', L);  
